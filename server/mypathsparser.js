@@ -90,4 +90,19 @@ const getRoutes = (filePath) => {
     return [...routes]; 
 }
 
-exports.routes = getRoutes(FILE_PATH);
+
+/**
+ * Extracts the directory structure per call.
+ * New changes to the structure will be reflected
+ * @returns 
+ */
+exports.routes = function(){
+    return getRoutes(FILE_PATH);
+}
+
+/**
+ * Extracts the directory structure once on build time.
+ * New changes to the structure will not be reflected until the server is restarted
+ * 
+ */
+//exports.routes = getRoutes(FILE_PATH);
