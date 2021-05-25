@@ -1,8 +1,18 @@
 const vm = require('vm');
-var fs = require("fs");
+const fs = require("fs");
+const chokidar = require('chokidar');
 
 // Text file containing the expression for the directory structure
 const FILE_PATH = `${__dirname}/mypaths.txt`
+
+
+// Watcher to listen to any changes to the file
+const watcher = chokidar.watch(FILE_PATH, { 
+    persistent: true,     
+    awaitWriteFinish: {
+        stabilityThreshold: 1000
+    }  
+});
 
 /**
  * Convert occurences of special HTML entities into string characters
@@ -80,7 +90,7 @@ const parseDirectoryStructure = (filePath) => {
  * @param {*} filePath 
  * @returns 
  */
-const getRoutes = (filePath) => {
+const extractRoutes = (filePath) => {
     let routes = traversePath(parseDirectoryStructure(filePath))
 
     // add an entry for the root path to the list of routes
@@ -92,17 +102,25 @@ const getRoutes = (filePath) => {
 
 
 /**
- * Extracts the directory structure per call.
- * New changes to the structure will be reflected
- * @returns 
+ * Parse the directory structure and update the routes only after a file change has occured
  */
-exports.routes = function(){
-    return getRoutes(FILE_PATH);
-}
+let routes = []
+watcher
+    .on('add', path => {
+        console.log(`File ${path} has been added`)
+        routes = extractRoutes(FILE_PATH)
+    })
+    .on('change', path => {
+        console.log(`File ${path} has been changed`)
+        routes = extractRoutes(FILE_PATH)
+    })
+    .on('unlink', path => {
+        console.log(`File ${path} has been removed`)
+        routes = []
+    })
+    .on('error', error => console.log(error))
 
-/**
- * Extracts the directory structure once on build time.
- * New changes to the structure will not be reflected until the server is restarted
- * 
- */
-//exports.routes = getRoutes(FILE_PATH);
+
+exports.getRoutes = function(){
+    return routes;
+};

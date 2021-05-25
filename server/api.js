@@ -37,13 +37,13 @@ const getRouteInfo = (routes, paramPath = "") => {
 
 
 app.get("/routes", (req, res) => {
-    res.json({routes: parser.routes()});
+    res.json({routes: parser.getRoutes()});
 });
 
 
 app.get("/path", (req, res) => {
     if("mypath" in req.query){
-        res.json({ content: getRouteInfo(parser.routes(), req.query.mypath) });
+        res.json({ content: getRouteInfo(parser.getRoutes(), req.query.mypath) });
     }
     else{
         res.json({ content: []})
